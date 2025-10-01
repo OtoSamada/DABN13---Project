@@ -1,0 +1,113 @@
+High-level phased workflow (do in order)
+
+1. Problem & Success Definition
+
+Clarify objective: Predict is_cancelled (binary).
+Define primary metric (e.g., ROC AUC) + secondary (PR AUC, F1 for positive class).
+Fix business framing: what threshold matters (e.g., flag likely cancellations > p=0.6).
+Document assumptions in README (Problem Statement section).
+
+2. Repository & Environment Setup
+
+Create final folder structure (move notebooks, add src/*).
+Add pyproject.toml or requirements.txt, .gitignore, README skeleton, LICENSE (if needed).
+Add basic logging + config loader (YAML).
+Optional: pre-commit (black, isort, flake8, nbstripout).
+
+3. Data Layer Initialization
+
+Place original CSV into data/raw (never edited).
+Write data dictionary (docs or README section).
+Implement schema validation (pandera or pydantic) for raw -> processed.
+Create ingestion script: loads raw -> saves cleaned parquet to data/processed.
+Output: data/processed/train.parquet (split later) + schema file.
+
+4. Enhanced EDA (refactor current notebook)
+
+Convert ad-hoc plots into reproducible functions (e.g., src/features/eda.py).
+Save figures to reports/figures (no inline-only plots).
+Summarize key findings into a short markdown report (reports/eda_summary.md).
+Identify candidate predictive features + target leakage risks.
+
+5. Data Splitting & Feature Spec
+
+Decide split strategy (time-based? if no leakage then stratified random).
+Create preprocessors.py with ColumnTransformer (numeric pipe + categorical pipe).
+Define feature list & transformations in configs/experiment.yaml.
+
+6. Baseline Modeling
+
+Implement training pipeline (src/pipelines/training_pipeline.py):
+load -> split -> build transformers -> fit simple model (LogisticRegression with class_weight).
+Log baseline metrics & confusion matrix artifact.
+Persist model + preprocessing pipeline (models/trained/baseline.joblib).
+
+7. Experimentation & Tracking (MLflow)
+
+Initialize MLflow (local backend under models/experiments/mlflow).
+Wrap training so every run logs: params, metrics, model artifact, feature importance, ROC/PR curves.
+Add additional models: RandomForest, GradientBoosting/XGBoost or LightGBM.
+Introduce hyperparameter search (Optuna) logging trials into MLflow.
+
+8. Model Evaluation & Selection
+
+Hold-out test set evaluation (kept unseen until now).
+Threshold tuning (Youden’s J or cost-based).
+Calibration check (reliability curve).
+Error analysis: segment performance (e.g., market_segment, hotel type).
+Produce performance summary table (reports/tables/performance_summary.csv).
+
+9. Model Registry & Metadata
+
+Create registry.json (model name, version, date, metrics, data hash, schema version).
+Store preprocessing + model + label encoder (if any) together.
+Optionally mark “production” tag in MLflow.
+
+10. Inference Pipeline
+
+Implement src/pipelines/inference_pipeline.py (load registry -> load artifacts -> predict).
+CLI script run_inference.py --input path/to/file.csv --output predictions.csv.
+Include probability + class + timestamp.
+
+11. Testing Suite
+
+Unit tests: feature functions, schema validator, preprocessing pipeline shape.
+Integration test: run end-to-end training on a 100-row sample.
+Add test for inference determinism (hash of predictions for fixed seed).
+
+12. CI Integration (optional)
+
+GitHub Actions: setup Python, install deps, run tests + lint.
+Cache dependencies.
+(Optional) artifact upload: coverage report.
+
+13. Documentation & Reporting
+
+Flesh out README: problem, data, pipeline diagram, how to reproduce, metrics.
+Add MODEL_CARD.md (ethical considerations, limitations, performance by segment).
+Add CONTRIBUTING.md and simple Makefile (make train, make test, make eda).
+Packaging & Reproducibility
+
+Ensure src is an installable package (editable install).
+Freeze dependencies (pip-tools or lockfile).
+Optional: Dockerfile (base python-slim + dependency install + non-root user).
+
+15. Advanced Enhancements (optional)
+
+Feature importance via SHAP; log plots.
+Data drift detection stub (compare new batch stats vs training).
+Scheduling (Airflow/Prefect) for periodic retraining.
+What to start with today (practical first sprint)
+Finalize problem & metrics (Step 1).
+Restructure repo + environment (Step 2).
+Implement ingestion + schema validation (Step 3).
+Refactor current EDA notebook to save figures + create eda_summary.md (Step 4).
+Draft experiment.yaml with feature lists & baseline model config (start Step 5).
+After that you’ll be ready to code the training pipeline.
+
+Deliverables after Sprint 1
+Clean structure committed.
+Validated processed dataset.
+Reusable EDA outputs in reports/.
+Config file outlining features & model baseline.
+Confirm when ready and we proceed to concrete code scaffolding. Let me know if you want a Makefile + pyproject template next.

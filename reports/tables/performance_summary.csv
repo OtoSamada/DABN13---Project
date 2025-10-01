@@ -1,0 +1,8 @@
+performance_metric, value
+Accuracy, 0.85
+Precision, 0.80
+Recall, 0.75
+F1 Score, 0.77
+ROC AUC, 0.82
+Training Time (seconds), 120
+Inference Time (seconds), 0.05

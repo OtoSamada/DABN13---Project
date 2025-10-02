@@ -290,70 +290,72 @@ class HotelCancellationClassification(HotelAnalysis):
     def grid_search(
         self,
         estimator,
-        param_grid: Dict[str, List[Any]],
+        param_grid: Dict[str, List],
         numeric_features: Optional[List[str]] = None,
         categorical_features: Optional[List[str]] = None,
         scoring: str = "f1",
         cv: int = 5,
         use_validation: bool = True,
-    ) -> str:
+    ):
         """
-        Generic grid search using ModelSearch.
-        Saves full preprocessing + estimator pipeline as a single artifact.
-
-        estimator: any sklearn-compatible estimator (e.g., LogisticRegression, DecisionTreeClassifier, XGBClassifier)
-        param_grid: dict of hyperparameters (no pipeline prefixes)
-        numeric_features / categorical_features: optional overrides
-        use_validation: evaluate on validation if available else test
+        Perform grid search with cross-validation
+        
+        Args:
+            estimator: scikit-learn estimator
+            param_grid: hyperparameter grid
+            numeric_features: list of numeric feature names (None = auto-detect)
+            categorical_features: list of categorical feature names (None = auto-detect)
+            scoring: scoring metric
+            cv: number of cross-validation folds
+            use_validation: whether to evaluate on validation set
         """
-        if self.split is None:
-            raise RuntimeError("Call prepare_split first.")
-
         if numeric_features is None:
             numeric_features = [
-                c for c in self.features if self.data[c].dtype != "object"
+                c for c in self.features if self.data[c].dtype in ["int64", "float64"]
             ]
+        
         if categorical_features is None:
             categorical_features = [
                 c for c in self.features if self.data[c].dtype == "object"
             ]
-
+        
         search = ModelSearch(
             estimator=estimator,
             param_grid=param_grid,
             numeric_features=numeric_features,
             categorical_features=categorical_features,
-            scale_numeric=estimator.__class__.__name__.lower().startswith("logistic"),
             scoring=scoring,
             cv=cv,
         )
         X_train = self.split.X_train
         y_train = self.split.y_train
         result = search.fit(X_train, y_train)
-
+        
         # Choose evaluation split
         if use_validation and self.split.X_val is not None:
-            eval_X, eval_y = self.split.X_val, self.split.y_val
-            eval_label = "val"
+            X_eval = self.split.X_val
+            y_eval = self.split.y_val
+            eval_name = "val"
         else:
-            eval_X, eval_y = self.split.X_test, self.split.y_test
-            eval_label = "test"
+            X_eval = self.split.X_test
+            y_eval = self.split.y_test
+            eval_name = "test"
 
-        preds = search.best_estimator_.predict(eval_X)
-        proba = search.best_estimator_.predict_proba(eval_X)[:, 1]
+        preds = search.best_estimator_.predict(X_eval)
+        proba = search.best_estimator_.predict_proba(X_eval)[:, 1]
         
         metrics = {
-            f"{eval_label}_accuracy": accuracy_score(eval_y, preds),
-            f"{eval_label}_precision": precision_score(eval_y, preds, zero_division=0),
-            f"{eval_label}_recall": recall_score(eval_y, preds, zero_division=0),
-            f"{eval_label}_f1": f1_score(eval_y, preds),
-            f"{eval_label}_roc_auc": roc_auc_score(eval_y, proba),
-            f"{eval_label}_avg_precision": average_precision_score(eval_y, proba),
+            f"{eval_name}_accuracy": accuracy_score(y_eval, preds),
+            f"{eval_name}_precision": precision_score(y_eval, preds, zero_division=0),
+            f"{eval_name}_recall": recall_score(y_eval, preds, zero_division=0),
+            f"{eval_name}_f1": f1_score(y_eval, preds),
+            f"{eval_name}_roc_auc": roc_auc_score(y_eval, proba),
+            f"{eval_name}_avg_precision": average_precision_score(y_eval, proba),
             "best_cv_score": result.best_score,
             "cv_scoring": scoring,
         }
         metrics["classification_report"] = classification_report(
-            eval_y, preds, output_dict=True
+            y_eval, preds, output_dict=True
         )
 
         self.metadata.log_experiment(

@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from dataclasses import dataclass
 from typing import Dict, Any, List, Optional
 
+# Dataclass to hold search results
 @dataclass
 class SearchResult:
     algorithm: str
@@ -16,6 +17,9 @@ class SearchResult:
     cv: int
 
 class ModelSearch:
+    """
+    A class to perform hyperparameter search with preprocessing pipelines.
+    """
     def __init__(
         self,
         estimator,
@@ -46,38 +50,52 @@ class ModelSearch:
         
         # Add numeric transformer if numeric features exist
         if self.numeric_features:
-            numeric_transformer = Pipeline(steps=[
-                ('scaler', StandardScaler())
-            ])
+            numeric_transformer = (
+                Pipeline(
+                    steps=[
+                        ('scaler', StandardScaler())
+                    ])
+            )
             transformers.append(('num', numeric_transformer, self.numeric_features))
         
         # Add categorical transformer if categorical features exist
         if self.categorical_features:
-            categorical_transformer = Pipeline(steps=[
-                ('onehot', OneHotEncoder(drop='first', sparse_output=False, handle_unknown='ignore'))
-            ])
+            categorical_transformer = (
+                Pipeline(
+                    steps=[
+                        ('onehot', OneHotEncoder(drop = 'first', sparse_output = False, handle_unknown = 'ignore'))
+                    ]
+                )
+            )
             transformers.append(('cat', categorical_transformer, self.categorical_features))
         
         # Create pipeline based on whether we have preprocessing steps
         if transformers:
             # We have preprocessing to do
-            preprocessor = ColumnTransformer(
-                transformers=transformers,
-                remainder='passthrough'  # Keep other columns as-is
+            preprocessor = (
+                ColumnTransformer(
+                    transformers = transformers,
+                    remainder = 'passthrough'
+                )
             )
-            pipeline = Pipeline([
-                ('prep', preprocessor),
-                ('est', self.estimator)
-            ])
+            pipeline = (
+                Pipeline([
+                    ('prep', preprocessor),
+                    ('est', self.estimator)
+                ])
+            )
         else:
             # No preprocessing needed - data is already processed
-            pipeline = Pipeline([
-                ('est', self.estimator)
-            ])
+            pipeline = (
+                Pipeline([
+                    ('est', self.estimator)
+                ])
+            )
         
         return pipeline
     
     def fit(self, X: pd.DataFrame, y) -> SearchResult:
+        
         self._gs = GridSearchCV(
             estimator = self.pipeline,
             param_grid = self.param_grid,
@@ -89,6 +107,7 @@ class ModelSearch:
             return_train_score = False,
         )
         self._gs.fit(X, y)
+
         return SearchResult(
             algorithm = self.estimator.__class__.__name__,
             best_params = {k.replace("est__", ""): v for k, v in self._gs.best_params_.items()},
@@ -112,10 +131,6 @@ class ModelSearch:
         if self._gs is None:
             raise ValueError("Model not fitted yet. Call fit() first.")
         return self._gs.best_estimator_
-
-    @property
-    def best_estimator_(self):
-        return self._gs.best_estimator_ if self._gs else None
 
     @property
     def best_params_(self):

@@ -63,20 +63,29 @@ class ModelMetadata:
     def save(self, path: Optional[str] = None) -> None:
         """Save metadata JSON to models/experiments/<experiment_name>.json"""
         if path is None:
-            path = f"models/experiments/{self.experiment_name}.json"
-        p = Path(path)
-        p.parent.mkdir(parents=True, exist_ok=True)
+            # Get project root (where src/ folder exists)
+            project_root = Path(__file__).parent.parent.parent
+            path = project_root / "models" / "experiments" / f"{self.experiment_name}.json"
+        else:
+            path = Path(path)
+        
+        path.parent.mkdir(parents=True, exist_ok=True)
+        
         existing: List[Dict[str, Any]] = []
-        if p.exists() and p.stat().st_size > 0:
+        if path.exists() and path.stat().st_size > 0:
             try:
-                existing = json.loads(p.read_text())
+                existing = json.loads(path.read_text())
             except Exception:
                 existing = []
+        
         merged = {self._key(m): m for m in existing}
         for m in self.metadata_log:
             merged[self._key(m)] = m
-        p.write_text(json.dumps(list(merged.values()), indent=2))
-        print(f"Metadata written: {p} (total {len(merged)} experiments)")
+        
+        path.write_text(json.dumps(list(merged.values()), indent=2))
+        print(f"Metadata written: {path} (total {len(merged)} experiments)")
+        
+        return str(path)
 
     def best(self, metric: str = "test_f1", algorithm: Optional[str] = None) -> Optional[Dict[str, Any]]:
         runs = self.metadata_log
@@ -89,17 +98,25 @@ class ModelMetadata:
     def save_best_model(
         self,
         metric: str = "test_f1",
-        source_dir: Path = Path("models/trained"),
-        dest_dir: Path = Path("models/best_models"),
-    ) -> None:
+        source_dir: Optional[Path] = None,
+        dest_dir: Optional[Path] = None,
+    ) -> Optional[str]:
         """
         Copy best model artifact (by metric) to best_models subfolder.
         Naming convention: best_<algorithm_lower>.joblib
         """
+        # Get project root
+        project_root = Path(__file__).parent.parent.parent
+        
+        if source_dir is None:
+            source_dir = project_root / "models" / "trained"
+        if dest_dir is None:
+            dest_dir = project_root / "models" / "best_models"
+        
         best = self.best(metric=metric)
         if not best:
             print("No experiments logged; cannot identify best model.")
-            return
+            return None
 
         algo = best["algorithm"].lower().replace("(gridsearch)", "").replace(" ", "_").strip()
         
@@ -111,7 +128,7 @@ class ModelMetadata:
 
         if not source_files:
             print(f"No model file found in {source_dir} matching algorithm: {algo}")
-            return
+            return None
 
         # Pick most recent if multiple
         source_file = max(source_files, key=lambda p: p.stat().st_mtime)
@@ -121,16 +138,34 @@ class ModelMetadata:
 
         shutil.copy2(source_file, dest_file)
         print(f"Best model copied: {source_file.name} -> {dest_file}")
-        print(f"  Metric: {metric} = {best['results'].get(metric, 'N/A'):.4f}")
+        print(f"  Metric: {metric} = {best['results'].get(metric, 'N/A')}")
         print(f"  Hyperparameters: {best['hyperparameters']}")
+        
+        return str(dest_file)  # Return path for verification
 
     def summary(self) -> None:
-        print(f"\nEXPERIMENT SUMMARY [{self.experiment_name}]")
-        print("-" * 70)
+        """Print summary of all logged experiments."""
+        print(f"\n{'='*70}")
+        print(f"EXPERIMENT LOG SUMMARY: {self.experiment_name}")
+        print(f"{'='*70}")
+        print(f"Total experiments: {len(self.metadata_log)}")
+        
+        if not self.metadata_log:
+            print("No experiments logged yet.")
+            return
+        
+        print("\nAll experiments:")
         for i, r in enumerate(self.metadata_log, 1):
             acc = r["results"].get("test_accuracy") or r["results"].get("val_accuracy") or r["results"].get("val_or_test_accuracy")
             f1 = r["results"].get("test_f1") or r["results"].get("val_f1") or r["results"].get("val_or_test_f1")
+            
+            # Fix: Proper conditional formatting
+            acc_str = f"{acc:.3f}" if acc is not None else "N/A"
+            f1_str = f"{f1:.3f}" if f1 is not None else "N/A"
+            
             print(
                 f"{i}. {r['algorithm']} params={r['hyperparameters']} "
-                f"metrics={{acc={acc:.3f if acc else 0:.3f}, f1={f1:.3f if f1 else 0:.3f}}}"
+                f"metrics={{acc={acc_str}, f1={f1_str}}}"
             )
+        
+        print(f"{'='*70}\n")

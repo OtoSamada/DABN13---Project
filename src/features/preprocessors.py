@@ -11,8 +11,9 @@ import pandas as pd
 @dataclass(slots=True)
 class PreprocessingConfig:
     """
-    Central configuration for SimpleHotelPreprocessor.
-    Adjust values here (or via overrides in ctor) without touching logic.
+    Configuration for hotel booking preprocessing.
+
+    Holds parameters and learned state for preprocessing steps.
     """
     target_col: str = "is_canceled"
 
@@ -42,7 +43,7 @@ class PreprocessingConfig:
         'Others': {'ATA','ATF','UNK'}
     })
 
-    # Columns to drop (leakage / high-cardinality / irrelevant)
+    # Columns to drop
     drop_columns: Tuple[str, ...] = (
         "reservation_status",
         "reservation_status_date",
@@ -75,10 +76,10 @@ class PreprocessingConfig:
         "previous_cancellations",
         "previous_bookings_not_canceled",
         "required_car_parking_spaces",
-        "stays_in_weekend_nights",  # optional to add flag if desired
+        "stays_in_weekend_nights",
     )
 
-    # Binning specs
+    # Binning specifications for high cardinality data
     adults_bins: Tuple[float, ...] = (0, 1, 2, np.inf)
     adults_labels: Tuple[str, ...] = ("1", "2", "3+")
 
@@ -88,7 +89,7 @@ class PreprocessingConfig:
     weekend_nights_bins: Tuple[float, ...] = (-0.1, 0, 1, 2, np.inf)
     weekend_nights_labels: Tuple[str, ...] = ("0", "1", "2", "3+")
 
-    # Cyclical encoding
+    # Cyclical encoding for week number column
     week_cycle_mod: int = 53
 
     # Output
@@ -100,8 +101,8 @@ class PreprocessingConfig:
     # Feature selection (base + engineered)
     base_keep: Tuple[str, ...] = (
         "hotel",
-        #"lead_time",
-        #"adults",
+        "lead_time",
+        "adults",
         "children",
         "babies",
         "meal",
@@ -119,9 +120,9 @@ class PreprocessingConfig:
         "days_in_waiting_list",
         "continent",
         "arrival_date_month",
-        #"arrival_date_week_number",
-        #"arrival_date_day_of_month",
-        #"adr",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
     )
 
     engineered_keep: Tuple[str, ...] = (
@@ -151,7 +152,7 @@ class PreprocessingConfig:
 
 class HotelPreprocessor:
     """
-    Simple preprocessing replicating notebook steps.
+    A preprocessing class, replicating steps taken from the exploratory notebook.
     Adds learned medians/modes + quantile caps for inference robustness.
     """
 
@@ -160,14 +161,17 @@ class HotelPreprocessor:
         config: Optional[PreprocessingConfig] = None,
         **overrides: Any,
     ) -> None:
+        
         self.config = config or PreprocessingConfig()
-        for k, v in overrides.items():
-            if hasattr(self.config, k):
-                setattr(self.config, k, v)
+        
+        # Apply any overrides to the original configuration
+        for _config, _value in overrides.items():
+            if hasattr(self.config, _config):
+                setattr(self.config, _config, _value)
             else:
-                raise AttributeError(f"Unknown config field: {k}")
+                raise AttributeError(f"Unknown config field: {_config}")
 
-        # Learned state
+        # Learned metrics, useful for infrence
         self._quantile_caps: Dict[str, float] = {}
         self._adr_median: Optional[float] = None
         self._numeric_medians: Dict[str, float] = {}
@@ -181,14 +185,14 @@ class HotelPreprocessor:
         }
 
     # Public API
-    def fit(self, df: pd.DataFrame) -> "SimpleHotelPreprocessor":
+    def fit(self, df: pd.DataFrame) -> "HotelPreprocessor":
         self._validate_input(df)
         tmp = df.copy()
 
         # Track original columns
         self._training_columns = list(tmp.columns)
 
-        # ADR median (ignore negatives)
+        # Get ADR median (ignore negatives)
         if "adr" in tmp.columns and tmp["adr"].notna().any():
             self._adr_median = float(tmp.loc[tmp["adr"] >= 0, "adr"].median())
 
@@ -197,39 +201,41 @@ class HotelPreprocessor:
             if col in tmp.columns and tmp[col].notna().any():
                 self._quantile_caps[col] = float(tmp[col].quantile(self.config.quantile_p))
 
-        # Generic imputers (only if enabled)
+        # Generic imputers, learn medians and modes to impute missing values
         if self.config.learn_generic_imputers:
             # Exclude target & columns slated for drop
             drop_set = set(self.config.drop_columns)
             target = self.config.target_col
             numeric_cols = [
-                c for c in tmp.select_dtypes(include=[np.number]).columns
+                c for c in tmp.select_dtypes(include = [np.number]).columns
                 if c != target and c not in drop_set
             ]
             cat_cols = [
-                c for c in tmp.select_dtypes(include=["object", "category"]).columns
+                c for c in tmp.select_dtypes(include = ["object", "category"]).columns
                 if c != target and c not in drop_set
             ]
             for c in numeric_cols:
                 if tmp[c].notna().any():
                     self._numeric_medians[c] = float(tmp[c].median())
             for c in cat_cols:
-                mode_vals = tmp[c].mode(dropna=True)
+                mode_vals = tmp[c].mode(dropna = True)
                 if not mode_vals.empty:
                     self._categorical_modes[c] = mode_vals.iloc[0]
 
         self._fitted = True
         return self
 
+
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         if not self._fitted:
             raise RuntimeError("Call fit() before transform().")
+        
         self._validate_input(df)
         cfg = self.config
         df_proc = df.copy()
 
         # 1. Drop duplicates
-        df_proc = df_proc.drop_duplicates().reset_index(drop=True)
+        df_proc = df_proc.drop_duplicates().reset_index(drop = True)
 
         # 2. Drop configured columns
         to_drop = [c for c in cfg.drop_columns if c in df_proc.columns]
@@ -240,7 +246,7 @@ class HotelPreprocessor:
         if "country" in df_proc.columns:
             df_proc = df_proc[~df_proc["country"].isna()].copy()
             df_proc["continent"] = df_proc["country"].map(self._continent_lookup).fillna("Others")
-            df_proc = df_proc.drop(columns=["country"])
+            df_proc = df_proc.drop(columns = ["country"])
 
         # 4. Children missing -> 0
         if "children" in df_proc.columns:
@@ -249,11 +255,14 @@ class HotelPreprocessor:
         # 5. Noise cleaning
         if "adr" in df_proc.columns and self._adr_median is not None:
             df_proc.loc[df_proc["adr"] < 0, "adr"] = self._adr_median
+
         if "adults" in df_proc.columns:
             df_proc = df_proc[(df_proc["adults"] != 0) & (df_proc["adults"] <= cfg.adults_max)]
+        
         for col in ("children", "babies"):
             if col in df_proc.columns:
                 df_proc = df_proc[df_proc[col] < 10]
+        
         if "stays_in_week_nights" in df_proc.columns:
             df_proc = df_proc[df_proc["stays_in_week_nights"] <= cfg.stays_in_week_nights_max]
 
@@ -264,11 +273,12 @@ class HotelPreprocessor:
                     df_proc.loc[df_proc[col] > cfg.adr_upper_threshold, col] = cap
                 df_proc.loc[df_proc[col] > cap, col] = cap
 
-        # 7. Generic imputation (median/mode) before derived features
+        # 7. Generic imputation (median/mode)
         if cfg.learn_generic_imputers:
             for c, val in self._numeric_medians.items():
                 if c in df_proc.columns:
                     df_proc[c] = df_proc[c].fillna(val)
+
             for c, val in self._categorical_modes.items():
                 if c in df_proc.columns:
                     df_proc[c] = df_proc[c].fillna(val)
@@ -276,16 +286,18 @@ class HotelPreprocessor:
         # 8. Arrival day grouping
         if "arrival_date_day_of_month" in df_proc.columns:
             day = df_proc["arrival_date_day_of_month"]
-            df_proc["arrival_date_day_of_month"] = np.select(
-                [day < 11, day < 21],
-                ["BoM", "MoM"],
-                default="EoM",
+            df_proc["arrival_date_day_of_month"] = (
+                np.select(
+                    [day < 11, day < 21],
+                    ["BoM", "MoM"],
+                    default = "EoM",
+                )            
             )
 
         # 9. Log transforms
         for col in cfg.log_transform_cols:
             if col in df_proc.columns:
-                df_proc[f"{col}_log"] = np.log1p(df_proc[col].clip(lower=0))
+                df_proc[f"{col}_log"] = np.log1p(df_proc[col].clip(lower = 0))
 
         # 10. Zero-inflated flags
         for col in cfg.zero_inflated_cols:
@@ -294,26 +306,36 @@ class HotelPreprocessor:
 
         # 11. Binning
         if "adults" in df_proc.columns:
-            df_proc["adults_cat"] = pd.cut(
-                df_proc["adults"],
-                bins=cfg.adults_bins,
-                labels=cfg.adults_labels,
-                include_lowest=True
-            ).astype(str)
+            df_proc["adults_cat"] = (
+                pd.cut(
+                    df_proc["adults"],
+                    bins = cfg.adults_bins,
+                    labels = cfg.adults_labels,
+                    include_lowest = True
+                )
+                .astype(str)
+            )
         if "total_of_special_requests" in df_proc.columns:
-            df_proc["total_of_special_requests_cat"] = pd.cut(
-                df_proc["total_of_special_requests"],
-                bins=cfg.special_req_bins,
-                labels=cfg.special_req_labels,
-                include_lowest=True
-            ).astype(str)
+            df_proc["total_of_special_requests_cat"] = (
+                pd.cut(
+                    df_proc["total_of_special_requests"],
+                    bins = cfg.special_req_bins,
+                    labels = cfg.special_req_labels,
+                    include_lowest = True
+                )
+                .astype(str)
+            )
+
         if "stays_in_weekend_nights" in df_proc.columns:
-            df_proc["stays_in_weekend_nights_cat"] = pd.cut(
-                df_proc["stays_in_weekend_nights"],
-                bins=cfg.weekend_nights_bins,
-                labels=cfg.weekend_nights_labels,
-                include_lowest=True
-            ).astype(str)
+            df_proc["stays_in_weekend_nights_cat"] = (
+                pd.cut(
+                    df_proc["stays_in_weekend_nights"],
+                    bins = cfg.weekend_nights_bins,
+                    labels = cfg.weekend_nights_labels,
+                    include_lowest = True
+                )
+                .astype(str)
+            )
 
         # 12. Cyclical encoding
         if "arrival_date_week_number" in df_proc.columns:
@@ -322,12 +344,12 @@ class HotelPreprocessor:
             df_proc["arrival_week_sin"] = np.sin(2 * np.pi * w / mod)
             df_proc["arrival_week_cos"] = np.cos(2 * np.pi * w / mod)
 
-        # 13. Optional warning for missing expected columns
+        # 13. Warning for missing expected columns
         missing_expected = [c for c in self._training_columns if c not in df_proc.columns]
         if missing_expected and cfg.verbose:
-            print(f"[WARN] Missing columns during transform: {missing_expected}")
+            print(f"Missing columns during transform: {missing_expected}")
 
-        return df_proc.reset_index(drop=True)
+        return df_proc.reset_index(drop = True)
 
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         return self.fit(df).transform(df)
@@ -387,19 +409,3 @@ class HotelPreprocessor:
     @property
     def config_dict(self) -> Dict[str, Any]:
         return self.config.as_dict()
-
-
-# Example CLI usage
-if __name__ == "__main__":
-    raw_path = Path("../../data/raw/hotel_bookings.csv")
-    if raw_path.exists():
-        raw_df = pd.read_csv(raw_path)
-        pre = HotelPreprocessor(verbose=True)
-        processed = pre.fit_transform(raw_df)
-        selected = pre.select_columns(processed, include_engineered=True)
-        out_path = pre.save(selected)
-        print(f"Processed shape: {processed.shape}")
-        print(f"Selected shape:  {selected.shape}")
-        print(f"Saved to: {out_path}")
-    else:
-        print("Raw data not found. Adjust path if necessary.")

@@ -1,0 +1,647 @@
+[
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:21:12.718068",
+    "algorithm": "LogisticRegression(GridSearch)",
+    "hyperparameters": {
+      "C": 100.0,
+      "penalty": "l2",
+      "solver": "saga"
+    },
+    "results": {
+      "val_accuracy": 0.783477758521086,
+      "val_precision": 0.7000777000777001,
+      "val_recall": 0.37714524905818336,
+      "val_f1": 0.49020674646354734,
+      "val_roc_auc": 0.7990168859640626,
+      "val_avg_precision": 0.6297921854832464,
+      "best_cv_score": 0.7611067312819495,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.783477758521086,
+      "test_precision": 0.7000777000777001,
+      "test_recall": 0.37714524905818336,
+      "test_f1": 0.49020674646354734,
+      "test_roc_auc": 0.7990168859640626,
+      "test_avg_precision": 0.6297921854832464,
+      "classification_report": {
+        "0": {
+          "precision": 0.7980456026058632,
+          "recall": 0.9383977018831791,
+          "f1-score": 0.8625495085814875,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.7000777000777001,
+          "recall": 0.37714524905818336,
+          "f1-score": 0.49020674646354734,
+          "support": 2389.0
+        },
+        "accuracy": 0.783477758521086,
+        "macro avg": {
+          "precision": 0.7490616513417816,
+          "recall": 0.6577714754706812,
+          "f1-score": 0.6763781275225174,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7710039712783321,
+          "recall": 0.783477758521086,
+          "f1-score": 0.7597734417184304,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 5,
+    "scoring": "f1_weighted"
+  },
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:21:30.471786",
+    "algorithm": "DecisionTreeClassifier(GridSearch)",
+    "hyperparameters": {
+      "max_depth": 10,
+      "min_samples_leaf": 2,
+      "min_samples_split": 5
+    },
+    "results": {
+      "val_accuracy": 0.7865973425765453,
+      "val_precision": 0.6833558863328822,
+      "val_recall": 0.4227710339053998,
+      "val_f1": 0.5223687613136798,
+      "val_roc_auc": 0.7935106136661849,
+      "val_avg_precision": 0.6077362543448549,
+      "best_cv_score": 0.768342563450404,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.7865973425765453,
+      "test_precision": 0.6833558863328822,
+      "test_recall": 0.4227710339053998,
+      "test_f1": 0.5223687613136798,
+      "test_roc_auc": 0.7935106136661849,
+      "test_avg_precision": 0.6077362543448549,
+      "classification_report": {
+        "0": {
+          "precision": 0.8078584366727045,
+          "recall": 0.9253112033195021,
+          "f1-score": 0.862605073272335,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.6833558863328822,
+          "recall": 0.4227710339053998,
+          "f1-score": 0.5223687613136798,
+          "support": 2389.0
+        },
+        "accuracy": 0.7865973425765453,
+        "macro avg": {
+          "precision": 0.7456071615027934,
+          "recall": 0.674041118612451,
+          "f1-score": 0.6924869172930075,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7734925680693729,
+          "recall": 0.7865973425765453,
+          "f1-score": 0.7686912027617369,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 5,
+    "scoring": "f1_weighted"
+  },
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:26:24.503172",
+    "algorithm": "RandomForestClassifier(GridSearch)",
+    "hyperparameters": {
+      "max_depth": null,
+      "max_features": "sqrt",
+      "min_samples_leaf": 1,
+      "min_samples_split": 5,
+      "n_estimators": 300
+    },
+    "results": {
+      "val_accuracy": 0.8049682264586944,
+      "val_precision": 0.7167594310451453,
+      "val_recall": 0.4851402260359983,
+      "val_f1": 0.5786320519221169,
+      "val_roc_auc": 0.8381181262614839,
+      "val_avg_precision": 0.6922134878741255,
+      "best_cv_score": 0.7901645868673387,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.8049682264586944,
+      "test_precision": 0.7167594310451453,
+      "test_recall": 0.4851402260359983,
+      "test_f1": 0.5786320519221169,
+      "test_roc_auc": 0.8381181262614839,
+      "test_avg_precision": 0.6922134878741255,
+      "classification_report": {
+        "0": {
+          "precision": 0.8252344416027281,
+          "recall": 0.9269071177784871,
+          "f1-score": 0.8731208659049909,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.7167594310451453,
+          "recall": 0.4851402260359983,
+          "f1-score": 0.5786320519221169,
+          "support": 2389.0
+        },
+        "accuracy": 0.8049682264586944,
+        "macro avg": {
+          "precision": 0.7709969363239366,
+          "recall": 0.7060236719072427,
+          "f1-score": 0.7258764589135539,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7952925813806524,
+          "recall": 0.8049682264586944,
+          "f1-score": 0.7918344676837216,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 3,
+    "scoring": "f1_weighted"
+  },
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:30:01.574152",
+    "algorithm": "XGBClassifier(GridSearch)",
+    "hyperparameters": {
+      "colsample_bytree": 0.9,
+      "learning_rate": 0.1,
+      "max_depth": 8,
+      "n_estimators": 350,
+      "scale_pos_weight": 1,
+      "subsample": 0.8
+    },
+    "results": {
+      "val_accuracy": 0.8023108030040439,
+      "val_precision": 0.6934931506849316,
+      "val_recall": 0.5085809962327333,
+      "val_f1": 0.5868147790388795,
+      "val_roc_auc": 0.8414125973965417,
+      "val_avg_precision": 0.6927525974339334,
+      "best_cv_score": 0.7967952135506746,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.8023108030040439,
+      "test_precision": 0.6934931506849316,
+      "test_recall": 0.5085809962327333,
+      "test_f1": 0.5868147790388795,
+      "test_roc_auc": 0.8414125973965417,
+      "test_avg_precision": 0.6927525974339334,
+      "classification_report": {
+        "0": {
+          "precision": 0.8299290163696943,
+          "recall": 0.9142993935525056,
+          "f1-score": 0.8700736578327891,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.6934931506849316,
+          "recall": 0.5085809962327333,
+          "f1-score": 0.5868147790388795,
+          "support": 2389.0
+        },
+        "accuracy": 0.8023108030040439,
+        "macro avg": {
+          "precision": 0.7617110835273129,
+          "recall": 0.7114401948926194,
+          "f1-score": 0.7284442184358343,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7922692494002086,
+          "recall": 0.8023108030040439,
+          "f1-score": 0.7918870071755216,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 5,
+    "scoring": "f1_weighted"
+  },
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:38:43.670239",
+    "algorithm": "XGBClassifier(GridSearch)",
+    "hyperparameters": {
+      "colsample_bytree": 0.85,
+      "learning_rate": 0.09,
+      "max_depth": 9,
+      "n_estimators": 350,
+      "scale_pos_weight": 1,
+      "subsample": 0.8
+    },
+    "results": {
+      "val_accuracy": 0.8027729636048527,
+      "val_precision": 0.6930917327293318,
+      "val_recall": 0.5123482628714944,
+      "val_f1": 0.5891696750902528,
+      "val_roc_auc": 0.8406482752834201,
+      "val_avg_precision": 0.6929252775525685,
+      "best_cv_score": 0.794977444607989,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.8027729636048527,
+      "test_precision": 0.6930917327293318,
+      "test_recall": 0.5123482628714944,
+      "test_f1": 0.5891696750902528,
+      "test_roc_auc": 0.8406482752834201,
+      "test_avg_precision": 0.6929252775525685,
+      "classification_report": {
+        "0": {
+          "precision": 0.8308898243576717,
+          "recall": 0.9135014363230131,
+          "f1-score": 0.8702394526795895,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.6930917327293318,
+          "recall": 0.5123482628714944,
+          "f1-score": 0.5891696750902528,
+          "support": 2389.0
+        },
+        "accuracy": 0.8027729636048527,
+        "macro avg": {
+          "precision": 0.7619907785435017,
+          "recall": 0.7129248495972538,
+          "f1-score": 0.7297045638849211,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7928540484015649,
+          "recall": 0.8027729636048527,
+          "f1-score": 0.7926570495991822,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 3,
+    "scoring": "f1_weighted"
+  },
+  {
+    "experiment_name": "hotel_cancellation_v1",
+    "timestamp": "2025-10-03T15:40:27.335256",
+    "algorithm": "XGBClassifier(GridSearch)",
+    "hyperparameters": {
+      "colsample_bytree": 0.85,
+      "gamma": 0.1,
+      "learning_rate": 0.09,
+      "max_depth": 9,
+      "min_child_weight": 1,
+      "n_estimators": 350,
+      "reg_alpha": 0.01,
+      "reg_lambda": 1.5,
+      "scale_pos_weight": 1,
+      "subsample": 0.8
+    },
+    "results": {
+      "val_accuracy": 0.8011554015020219,
+      "val_precision": 0.6904218928164196,
+      "val_recall": 0.5069066555043952,
+      "val_f1": 0.5846005310161718,
+      "val_roc_auc": 0.8415017454855127,
+      "val_avg_precision": 0.69212393371962,
+      "best_cv_score": 0.7953302554261503,
+      "cv_scoring": "f1_weighted",
+      "test_accuracy": 0.8011554015020219,
+      "test_precision": 0.6904218928164196,
+      "test_recall": 0.5069066555043952,
+      "test_f1": 0.5846005310161718,
+      "test_roc_auc": 0.8415017454855127,
+      "test_avg_precision": 0.69212393371962,
+      "classification_report": {
+        "0": {
+          "precision": 0.8293001014345747,
+          "recall": 0.9133418448771146,
+          "f1-score": 0.8692944482418167,
+          "support": 6266.0
+        },
+        "1": {
+          "precision": 0.6904218928164196,
+          "recall": 0.5069066555043952,
+          "f1-score": 0.5846005310161718,
+          "support": 2389.0
+        },
+        "accuracy": 0.8011554015020219,
+        "macro avg": {
+          "precision": 0.7598609971254972,
+          "recall": 0.7101242501907549,
+          "f1-score": 0.7269474896289942,
+          "support": 8655.0
+        },
+        "weighted avg": {
+          "precision": 0.7909661857339655,
+          "recall": 0.8011554015020219,
+          "f1-score": 0.790711690500388,
+          "support": 8655.0
+        }
+      }
+    },
+    "random_state": null,
+    "data_info": {
+      "n_rows": 86544,
+      "n_features": 38,
+      "features": [
+        "hotel",
+        "lead_time",
+        "adults",
+        "children",
+        "babies",
+        "meal",
+        "distribution_channel",
+        "is_repeated_guest",
+        "reserved_room_type",
+        "deposit_type",
+        "customer_type",
+        "required_car_parking_spaces",
+        "total_of_special_requests",
+        "stays_in_weekend_nights",
+        "stays_in_week_nights",
+        "previous_cancellations",
+        "previous_bookings_not_canceled",
+        "days_in_waiting_list",
+        "continent",
+        "arrival_date_month",
+        "arrival_date_week_number",
+        "arrival_date_day_of_month",
+        "adr",
+        "lead_time_log",
+        "stays_in_week_nights_log",
+        "adr_log",
+        "children_gt0",
+        "babies_gt0",
+        "days_in_waiting_list_gt0",
+        "previous_cancellations_gt0",
+        "previous_bookings_not_canceled_gt0",
+        "required_car_parking_spaces_gt0",
+        "stays_in_weekend_nights_gt0",
+        "adults_cat",
+        "total_of_special_requests_cat",
+        "stays_in_weekend_nights_cat",
+        "arrival_week_sin",
+        "arrival_week_cos"
+      ],
+      "target": "is_canceled",
+      "class_balance": {
+        "0": 0.7240247735256055,
+        "1": 0.27597522647439454
+      }
+    },
+    "cv": 3,
+    "scoring": "f1_weighted"
+  }
+]
